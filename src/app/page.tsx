@@ -1,6 +1,6 @@
 "use client"
 import { useDraw } from "@/hooks/useDraw";
-import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove } from "react-icons/bi";
+import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail } from "react-icons/bi";
 import { TransformWrapper, TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 import { SketchPicker } from "react-color";
 import { MouseEventHandler, useState } from "react";
@@ -9,6 +9,7 @@ enum Tool {
     Unknown = 0,
     Pencil = 1,
     Eraser = 2,
+    ColorPicker = 3,
     Camera = 9,
 }
 
@@ -20,10 +21,12 @@ const Home = () => {
     const { canvasRef, onMouseDown, clearCanvas, onZoom } = useDraw(drawLine);
     const [cameraScale, setCameraScale] = useState<number>(1.0);
     
+    function toHex(value: number) {
+        let hex = value.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
 
     function drawLine({ ctx, curCoords, prevCoords }: Draw) {
-        if(currentTool != Tool.Pencil && currentTool != Tool.Eraser) return;
-
         const { x: curX, y: curY } = curCoords;
         const lineColor = color;
         const halfWidth = lineWidth / 2;
@@ -37,17 +40,32 @@ const Home = () => {
             return;
         }
 
-        ctx.beginPath();
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = lineColor;
-        ctx.moveTo(startCoords.x, startCoords.y);
-        ctx.lineTo(curX, curY);
-        ctx.stroke();
+        if(currentTool == Tool.ColorPicker) {
 
-        ctx.fillStyle = lineColor;
-        ctx.beginPath();
-        ctx.arc(startCoords.x, startCoords.y, lineWidth/2, 0, lineWidth/2 * Math.PI);
-        ctx.fill();
+            const data = ctx.getImageData(curCoords.x, curCoords.y, 1, 1).data;
+            console.log(data);
+            
+            if(data[3] < 1) setColor("#eee");
+            else {
+                const hex = "#" + toHex(data[0]) + toHex(data[1]) + toHex(data[2]);
+                setColor(hex);
+            }
+            return;
+        }
+
+        if(currentTool == Tool.Pencil) {
+            ctx.beginPath();
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = lineColor;
+            ctx.moveTo(startCoords.x, startCoords.y);
+            ctx.lineTo(curX, curY);
+            ctx.stroke();
+
+            ctx.fillStyle = lineColor;
+            ctx.beginPath();
+            ctx.arc(startCoords.x, startCoords.y, lineWidth/2, 0, lineWidth/2 * Math.PI);
+            ctx.fill();
+        }
 
     }
 
@@ -73,17 +91,29 @@ const Home = () => {
                         pressed={currentTool == Tool.Camera}
                         onClick={() => {setCurrentTool(Tool.Camera) }}
                     />
-                    <ToolButton></ToolButton>
+                    <hr />
                     <ToolButton
                         label="Color"
                         icon={<BiPalette />}
                         pressed={showColorPicker}
                         onClick={() => { setShowColorPicker(!showColorPicker) }}
+                        iconColor={color}
                     />
+                    <ToolButton
+                        label="Color Picker"
+                        icon={<BiSolidEyedropper />}
+                        pressed={currentTool == Tool.ColorPicker}
+                        onClick={() => { setCurrentTool(Tool.ColorPicker) }}
+                    /> 
                     <ToolButton 
                         label="Clear"
                         icon={<BiTrash />}
                         onClick={clearCanvas}
+                    />
+                    <hr />
+                    <ToolButton
+                        label="Send Message"
+                        icon={<BiMessageRoundedDetail />}
                     />
                     
                 </div>
@@ -102,6 +132,7 @@ const Home = () => {
                 <button onClick={() => {setLineWidth(5)}}>Medium</button>
                 <button onClick={() => {setLineWidth(8)}}>Big</button>
                 <button onClick={() => {setLineWidth(12)}}>Huge</button>
+                <button onClick={() => {setLineWidth(24)}}>Giant</button>
             </div>
             : null }
 
@@ -135,11 +166,13 @@ interface ToolButtonProps {
     icon?: JSX.Element
     onClick?: Function
     pressed?: boolean
+    iconColor?: string
 }
 
 const ToolButton = (props: ToolButtonProps) => {
     const defaults: ToolButtonProps = {
-        pressed: false
+        pressed: false,
+        iconColor: "#fff"
     }
     props = { ...defaults, ...props }
     const handleClick = (e: React.MouseEvent) => {
@@ -153,6 +186,7 @@ const ToolButton = (props: ToolButtonProps) => {
                 onClick={handleClick}
                 aria-pressed={props.pressed}
                 aria-label={props.label}
+                style={{color: props.iconColor}}
             >
                 {props.icon ? props.icon : null}
             </button>

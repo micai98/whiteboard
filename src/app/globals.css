@@ -61,7 +61,7 @@ canvas {
 }
 
 .topbar button svg {
-  color: #eee;
+  color: inherit;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -85,6 +85,13 @@ canvas {
   border-radius: 8px;
   border: 1px solid #333;
   z-index: 100;
+}
+
+.topbar hr {
+  display: block;
+  border: 0;
+  border-left: 1px solid #444;
+  height: 2rem;
 }
 
 #chatbox {
