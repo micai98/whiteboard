@@ -59,15 +59,44 @@ const Home = () => {
         }
     }
 
+    // connection
     useEffect(() => {
         const ctx = canvasRef.current?.getContext("2d");
+
+        socket.emit("client_ready");
+
+        socket.on("canvas_request_state", () => {
+            if(!canvasRef.current?.toDataURL()) return;
+            socket.emit("canvas_state", canvasRef.current.toDataURL());
+        });
+
+        socket.on("canvas_receive_state", (state: string) => {
+            console.log("Received state from server", state);
+            const img = new Image()
+            img.src = state;
+            img.onload = () => {
+                ctx?.drawImage(img, 0, 0);
+            }
+        });
+
+        socket.on("canvas_clear", () => {
+            clearCanvas();
+        });
 
         socket.on("draw_line", (data: Array<any>) => {
             if(!ctx) return;
             drawLine(replicateLine(ctx, data));
             console.log(data);
-        })
-    }, []);
+        });
+
+        return () => {
+            socket.off("client_ready");
+            socket.off("canvas_request_state");
+            socket.off("canvas_received_state");
+            socket.off("canvas_clear");
+            socket.off("draw_line");
+        }
+    }, [canvasRef]);
 
     return (
         <>
