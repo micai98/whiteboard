@@ -1,73 +1,73 @@
 "use client"
-import { useDraw } from "@/hooks/useDraw";
+import { useCanvas } from "@/hooks/useCanvas";
 import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail } from "react-icons/bi";
 import { TransformWrapper, TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 import { SketchPicker } from "react-color";
-import { MouseEventHandler, useState } from "react";
+import { MouseEventHandler, useEffect, useState } from "react";
+import { toHex } from "@/utils/toHex";
+import { io } from "socket.io-client";
+import { Tool } from "@/types/enums"
+import { drawLine } from "@/utils/drawLine";
 
-enum Tool {
-    Unknown = 0,
-    Pencil = 1,
-    Eraser = 2,
-    ColorPicker = 3,
-    Camera = 9,
-}
+
+
+const socket = io("http://localhost:3001");
 
 const Home = () => {
     const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
     const [currentTool, setCurrentTool] = useState<number>(Tool.Pencil);
-    const [color, setColor] = useState<string>("#000000aa");
+    const [color, setColor] = useState<string>("#000000");
     const [lineWidth, setLineWidth] = useState<number>(5);
-    const { canvasRef, onMouseDown, clearCanvas, onZoom } = useDraw(drawLine);
+    const { canvasRef, onMouseDown, clearCanvas, onZoom } = useCanvas(handleCanvasAction);
     const [cameraScale, setCameraScale] = useState<number>(1.0);
-    
-    function toHex(value: number) {
-        let hex = value.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-    }
 
-    function drawLine({ ctx, curCoords, prevCoords }: Draw) {
-        const { x: curX, y: curY } = curCoords;
-        const lineColor = color;
-        const halfWidth = lineWidth / 2;
+    function handleCanvasAction({prevCoords, curCoords, ctx}: Draw) {
+        if(currentTool == Tool.Pencil) {
+            createLine({ctx, prevCoords, curCoords, color, lineWidth})
+            return;
+        }
 
-        let startCoords = prevCoords ?? curCoords;
-
+        // no transparency support so an eraser is just a pencil that draws with the background color
         if(currentTool == Tool.Eraser) {
-            ctx.clearRect(startCoords.x - halfWidth, startCoords.y - halfWidth, lineWidth, lineWidth);
-            ctx.clearRect(curCoords.x - halfWidth, curCoords.y - halfWidth, lineWidth, lineWidth);
-
+            createLine({ctx, prevCoords, curCoords, color: "#fff", lineWidth})
             return;
         }
 
         if(currentTool == Tool.ColorPicker) {
-
             const data = ctx.getImageData(curCoords.x, curCoords.y, 1, 1).data;
-            console.log(data);
-            
-            if(data[3] < 1) setColor("#eee");
-            else {
-                const hex = "#" + toHex(data[0]) + toHex(data[1]) + toHex(data[2]);
-                setColor(hex);
-            }
+            const hex = "#" + toHex(data[0]) + toHex(data[1]) + toHex(data[2]);
+            setColor(hex);
             return;
         }
-
-        if(currentTool == Tool.Pencil) {
-            ctx.beginPath();
-            ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = lineColor;
-            ctx.moveTo(startCoords.x, startCoords.y);
-            ctx.lineTo(curX, curY);
-            ctx.stroke();
-
-            ctx.fillStyle = lineColor;
-            ctx.beginPath();
-            ctx.arc(startCoords.x, startCoords.y, lineWidth/2, 0, lineWidth/2 * Math.PI);
-            ctx.fill();
-        }
-
     }
+
+    
+
+    function createLine({prevCoords, curCoords, ctx, color, lineWidth}: DrawLineProps) {
+       drawLine({ctx, prevCoords, curCoords, color, lineWidth});
+       // converting to a list to send less data
+       socket.emit("draw_line", [prevCoords?.x, prevCoords?.y, curCoords?.x, curCoords?.y, color, lineWidth]);
+    }
+
+    function replicateLine(ctx: CanvasRenderingContext2D, data: Array<any>): DrawLineProps {
+        return {
+            ctx: ctx,
+            prevCoords: {x: data[0], y: data[1]}, 
+            curCoords: {x: data[2], y: data[3]},
+            color: data[4],
+            lineWidth: data[5]
+        }
+    }
+
+    useEffect(() => {
+        const ctx = canvasRef.current?.getContext("2d");
+
+        socket.on("draw_line", (data: Array<any>) => {
+            if(!ctx) return;
+            drawLine(replicateLine(ctx, data));
+            console.log(data);
+        })
+    }, []);
 
     return (
         <>
@@ -128,11 +128,11 @@ const Home = () => {
                 Color
                 <SketchPicker color={color} onChange={(e) => setColor(e.hex)} />
                 Line Width <br />
-                <button onClick={() => {setLineWidth(2)}}>Small</button>
-                <button onClick={() => {setLineWidth(5)}}>Medium</button>
-                <button onClick={() => {setLineWidth(8)}}>Big</button>
-                <button onClick={() => {setLineWidth(12)}}>Huge</button>
-                <button onClick={() => {setLineWidth(24)}}>Giant</button>
+                <button onClick={() => {setLineWidth(2)}}>S</button>
+                <button onClick={() => {setLineWidth(5)}}>M</button>
+                <button onClick={() => {setLineWidth(8)}}>L</button>
+                <button onClick={() => {setLineWidth(12)}}>XL</button>
+                <button onClick={() => {setLineWidth(24)}}>XXL</button>
             </div>
             : null }
 

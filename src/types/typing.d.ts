@@ -4,4 +4,9 @@ type Draw = {
     prevCoords: Coords | null
 }
 
+type DrawLineProps = Draw & {
+    color: string
+    lineWidth: number
+}
+
 type Coords = { x: number; y: number }

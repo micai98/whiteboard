@@ -1,6 +1,6 @@
 import { MouseEventHandler, useEffect, useRef, useState } from "react"
 
-export const useDraw = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) => {
+export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) => {
     const [mouseDown, setMouseDown] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,8 +23,16 @@ export const useDraw = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) =>
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
+    // initial render, paint the canvas with the default background color
+    useEffect(() => {
+        clearCanvas();
+    }, [])
+
+    // actual hook
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             const curCoords = getCoords(e);
