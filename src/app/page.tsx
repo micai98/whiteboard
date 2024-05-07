@@ -177,7 +177,7 @@ const Home = () => {
                     <ToolButton 
                         label="Clear"
                         icon={<BiTrash />}
-                        onClick={clearCanvas}
+                        onClick={() => {socket.emit("vote_clear")}}
                     />
                     <hr />
                     <ToolButton
