@@ -95,7 +95,8 @@ const Home = () => {
         socket.emit("client_ready");
 
         socket.on("connect", () => {
-            chatPrint(socket.id?.toString());
+            chatPrint("Connected to online room");
+            if(socket.id) setRoomName(socket.id);
         });
 
         socket.on("canvas_request_state", () => {
