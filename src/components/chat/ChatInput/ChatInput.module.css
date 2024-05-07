@@ -1,0 +1,29 @@
+.inputbox {
+    transition: 0.1s;
+    font-family: inherit;
+    font-size: inherit;
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    color: #eee;
+    text-shadow: 1px 1px 2px #000;
+    font-style: normal;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+}
+
+.inputbox:focus {
+    transition: 0.1s;
+    background-color: #0000000d;
+    outline: none;
+    font-style: normal;
+}
+
+.inputbox::placeholder {
+    color: #ccc;
+}
+
+.inputbox:focus::placeholder {
+    color: transparent;
+    text-shadow: none;
+}

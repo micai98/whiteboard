@@ -1,0 +1,25 @@
+.chatbox {
+    transition: 0.1s;
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    line-height: 1.5rem;
+    background-color: #2222222d;
+    padding: 0.5rem;
+    min-width: 20rem;
+    max-width: 25rem;
+    border-radius: 8px;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px #000;
+}
+  
+.chatboxList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    max-height: 10rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-color: #ffffff4b #0000002b;
+    scrollbar-width: thin;
+}

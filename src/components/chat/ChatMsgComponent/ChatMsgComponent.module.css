@@ -1,0 +1,19 @@
+.msgInfo {
+    font-style: italic;
+    color: #dfdfdf;
+}
+
+.msgUser {
+    font-style: normal;
+    color: #eee;
+}
+
+.msgError {
+    font-style: italic;
+    color: #faa;
+}
+
+.msgWarning {
+    font-style: italic;
+    color: #ffa;
+}
