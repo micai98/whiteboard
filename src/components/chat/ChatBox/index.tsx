@@ -11,10 +11,11 @@ interface ChatBoxProps {
 }
 
 const ChatBox = (props: ChatBoxProps) => {
-
     const ulRef = useRef<HTMLUListElement>(null);
-    if(ulRef.current)
-        ulRef.current.scrollTop = 1000000.0;
+    
+    useEffect(() => {
+        if(ulRef.current) ulRef.current.scrollTop = 1000000.0;
+    }, [props.messages]);
 
     function chatPrint(text: string) {
         const msg: ChatMsg = {
