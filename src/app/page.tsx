@@ -57,8 +57,11 @@ const Home = () => {
         setChatMessages((prev) => [...prev, msg]);
     }
 
+    // send commands from chat to the server. if there's no command prefix, automatically assume it's meant to be a chat message
     function chatHandleSubmit(text: string) {
-        socket.emit("msg_send", text);
+        if(text.startsWith("/")) text = text.substring(1);
+        else text = "say " + text;
+        socket.emit("command", text);
     }
 
     function createLine({prevCoords, curCoords, ctx, color, lineWidth}: DrawLineProps) {
@@ -177,7 +180,7 @@ const Home = () => {
                     <ToolButton 
                         label="Clear"
                         icon={<BiTrash />}
-                        onClick={() => {socket.emit("vote_clear")}}
+                        onClick={() => {socket.emit("command", "clear")}}
                     />
                     <hr />
                     <ToolButton

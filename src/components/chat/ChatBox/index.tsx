@@ -17,14 +17,6 @@ const ChatBox = (props: ChatBoxProps) => {
         if(ulRef.current) ulRef.current.scrollTop = 1000000.0;
     }, [props.messages]);
 
-    function chatPrint(text: string) {
-        const msg: ChatMsg = {
-            variant: ChatMsgVariant.SysInfo,
-            timestamp: Date.now(),
-            content: text
-        }
-    }
-
     return <div id="chatbox" className={styles.chatbox}>
         <ul className={styles.chatboxList} ref={ulRef}>
             { props.messages.map((message, index) => {
