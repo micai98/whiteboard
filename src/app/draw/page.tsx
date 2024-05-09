@@ -1,5 +1,5 @@
 "use client"
-import { Suspense, use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail } from "react-icons/bi";
 import { TransformWrapper, TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 import { SketchPicker } from "react-color";
@@ -11,8 +11,8 @@ import { drawLine } from "@/utils/drawLine";
 import ChatBox from "@/components/chat/ChatBox";
 import ToolButton from "@/components/toolbar/ToolButton";
 import socket from "../socket";
-import { getUserName } from "../actions";
-import { notFound, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import Spinner from "@/components/ui/Spinner";
 
 const Draw = () => {
     const router = useRouter()
@@ -84,19 +84,9 @@ const Draw = () => {
 
     // establish connection
     useEffect(() => {
-        // const tryConnect = async() => {
-        //     const username = await getUserName();
-        //     if(!username) {
-        //         chatPrint("Username not set, aborting connection");
-        //         router.push("/");
-        //     }
-        //     else {
-        //         socket.auth = {user_name: username}
-        //         socket.connect();
-        //     }
-        // }
-        // tryConnect();
-        socket.auth = {user_name: "debil"}
+        socket.auth = {
+            "user_name": localStorage.getItem("username")
+        }
         socket.connect();
 
         return () => {
@@ -130,7 +120,7 @@ const Draw = () => {
             } else {
                 chatPrint("Server refused connection: " + data.message, ChatMsgVariant.SysError);
             }
-            
+            setIsLoading(false);
         });
 
         socket.on("canvas_request_state", () => {
@@ -242,22 +232,22 @@ const Draw = () => {
             </div>
             : null }
 
+            {isLoading ? <div className="centerscreen"><Spinner size="6rem"/></div> : null}
+
             <TransformWrapper minScale={0.5} disabled={currentTool != Tool.Camera} onZoom={onZoom}>
                 <TransformComponent>
-                    {isLoading ? (
-                        <div><h1>Now loading...</h1></div>
-                    ) : (
-                    <div id="drawingboard" onMouseDown={onMouseDown}>
-                        <canvas ref={canvasRef} width={800} height={600}>
+                    <div id="drawingboard" onMouseDown={onMouseDown} hidden={isLoading}>
+                        <canvas ref={canvasRef} className="centerscreen" width={800} height={600}>
 
                         </canvas>
                     </div>
-                    )}
+                    
                 </TransformComponent>
             </TransformWrapper>
 
+            <div className="animate-fadein">
             <ChatBox messages={chatMessages} handleSubmit={chatHandleSubmit}/>
-
+            </div>
         </>
     );
 }

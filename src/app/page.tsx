@@ -1,7 +1,6 @@
 "use client"
 import styles from "./Home.module.css"
 import { cookies } from "next/headers"
-import { setUserName, getUserName } from "./actions"
 
 const Home = () => {
     return <main className={styles.main}>
@@ -9,7 +8,12 @@ const Home = () => {
         <br />
 
         <div className={styles.textbox}>
-            <input type="text" placeholder="Username" onChange={(e) => {setUserName(e.target.value)}}></input>
+            <input 
+                type="text" 
+                placeholder="Username" 
+                defaultValue={localStorage.getItem("username") || ""} 
+                onChange={(e) => { localStorage.setItem("username", e.target.value) }}
+            />
         </div>
 
         <a href="/draw"><button>Create room</button></a>

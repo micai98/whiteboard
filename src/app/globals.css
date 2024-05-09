@@ -10,13 +10,15 @@ body {
 }
 
 canvas {
+  background-color: #eee;
+  border: 1px solid #aaa;
+}
+
+.centerscreen {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-
-  background-color: #eee;
-  border: 1px solid #aaa;
 }
 
 a {
@@ -71,6 +73,8 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  animation: topbar-slidein 0.5s;
 }
 
 .topbar div {
@@ -150,3 +154,26 @@ button:active {
   height: 2rem;
 }
 
+@keyframes topbar-slidein {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+.animate-fadein {
+  animation: fadein 1s;
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0%;
+  }
+
+  100% {
+    opacity: 100%;
+  }
+}
