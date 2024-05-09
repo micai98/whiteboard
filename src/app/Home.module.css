@@ -15,7 +15,21 @@
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
+
+    animation: popup 0.5s;
 }
+
+@keyframes popup {
+    0% {
+      transform: translate(-50%, -75%);
+      opacity: 0%;
+    }
+  
+    100% {
+      opacity: 100%;
+      transform: tran;
+    }
+  }
 
 .main h1 {
     margin: 0;

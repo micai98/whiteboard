@@ -1,9 +1,12 @@
 "use client"
+import { useState } from "react"
 import styles from "./Home.module.css"
-import { cookies } from "next/headers"
+import Link from "next/link";
 
 const Home = () => {
-    return <main className={styles.main}>
+    const [ roomcode, setRoomcode ] = useState<string>("");
+
+    return <main className={styles.main + " animate-popup"}>
         <h1>Whiteboard</h1>
         <br />
 
@@ -11,18 +14,26 @@ const Home = () => {
             <input 
                 type="text" 
                 placeholder="Username" 
-                defaultValue={localStorage.getItem("username") || ""} 
-                onChange={(e) => { localStorage.setItem("username", e.target.value) }}
+                defaultValue={localStorage?.getItem("username") || ""} 
+                onChange={(e) => { localStorage?.setItem("username", e.target.value) }}
             />
         </div>
 
-        <a href="/draw"><button>Create room</button></a>
+        <Link href="/draw">
+            <button>Create room</button>
+        </Link>
 
         <div className={styles.textbox}>
-            <input type="text" placeholder="Room code"></input>
+            <input
+                type="text" 
+                placeholder="Room code"
+                onChange={(e) => {setRoomcode(e.target.value)}}
+            />
         </div>
 
-        <button>Join room</button>
+        <Link href={"/draw?room=" + roomcode}>
+            <button>Join room</button>
+        </Link>
 
     </main>
 }

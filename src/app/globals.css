@@ -137,6 +137,8 @@ button:active {
   border-radius: 1rem;
   width: 2.5rem;
   margin-right: 0.2rem;
+  padding: 0;
+  font-weight: normal;
 }
 
 .topbar-colorpicker button:hover {
@@ -165,7 +167,7 @@ button:active {
 }
 
 .animate-fadein {
-  animation: fadein 1s;
+  animation: fadein 0.25s;
 }
 
 @keyframes fadein {

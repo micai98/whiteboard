@@ -1,5 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail } from "react-icons/bi";
 import { TransformWrapper, TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 import { SketchPicker } from "react-color";
@@ -10,18 +12,19 @@ import { ChatMsgVariant, Tool } from "@/types/enums"
 import { drawLine } from "@/utils/drawLine";
 import ChatBox from "@/components/chat/ChatBox";
 import ToolButton from "@/components/toolbar/ToolButton";
-import socket from "../socket";
-import { useRouter } from "next/navigation";
 import Spinner from "@/components/ui/Spinner";
+import socket from "../socket";
 
 const Draw = () => {
-    const router = useRouter()
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+
     const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
     const [currentTool, setCurrentTool] = useState<number>(Tool.Pencil);
     const [color, setColor] = useState<string>("#000000");
     const [lineWidth, setLineWidth] = useState<number>(5);
     const { canvasRef, onMouseDown, clearCanvas, onZoom } = useCanvas(handleCanvasAction);
-    const [cameraScale, setCameraScale] = useState<number>(1.0);
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [chatMessages, setChatMessages] = useState<Array<ChatMsg>>(new Array);
@@ -84,8 +87,13 @@ const Draw = () => {
 
     // establish connection
     useEffect(() => {
+        const username: string | null = localStorage.getItem("username");
+        if (!username) {
+            chatPrint("Username not set - Returning to main menu");
+            router.push("/");
+        }
         socket.auth = {
-            "user_name": localStorage.getItem("username")
+            "user_name": username
         }
         socket.connect();
 
@@ -103,9 +111,7 @@ const Draw = () => {
         socket.emit("client_ready");
 
         socket.on("connect", () => {
-            chatPrint("Connecting...");
             if(socket.id) setRoomName(socket.id);
-            
         });
 
         socket.on("disconnect", () => {
@@ -116,11 +122,12 @@ const Draw = () => {
         socket.on("connect_response", (data: ConnectResponse) => {
             console.log(data);
             if(data.accepted) {
-                chatPrint("Connected as " + data.username);
+                //chatPrint("Connected as " + data.username);
+                setIsLoading(false);
             } else {
                 chatPrint("Server refused connection: " + data.message, ChatMsgVariant.SysError);
             }
-            setIsLoading(false);
+            
         });
 
         socket.on("canvas_request_state", () => {
@@ -220,7 +227,7 @@ const Draw = () => {
             </div>
 
             { showColorPicker ? 
-            <div className="topbar-colorpicker">
+            <div className="topbar-colorpicker animate-fadein">
                 Color
                 <SketchPicker disableAlpha={false} color={color} onChange={(e) => setColor(e.hex)} />
                 Line Width <br />
@@ -237,7 +244,7 @@ const Draw = () => {
             <TransformWrapper minScale={0.5} disabled={currentTool != Tool.Camera} onZoom={onZoom}>
                 <TransformComponent>
                     <div id="drawingboard" onMouseDown={onMouseDown} hidden={isLoading}>
-                        <canvas ref={canvasRef} className="centerscreen" width={800} height={600}>
+                        <canvas ref={canvasRef} className="centerscreen animate-fadein" width={800} height={600}>
 
                         </canvas>
                     </div>

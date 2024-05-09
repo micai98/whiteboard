@@ -1,9 +1,9 @@
-import styles from "../Home.module.css"
+import Spinner from "@/components/ui/Spinner";
 
 const Loading = () => {
-    return <main className={styles.main}>
-        <h1>Now loading...</h1>
-    </main>
+    // WORKAROUND: loading pages for components that use localStorage will throw errors, this should prevent that
+    const localStorage:Storage | null = null;
+    return <div className="centerscreen"><Spinner size="6rem"/></div>
 }
 
 export default Loading;
