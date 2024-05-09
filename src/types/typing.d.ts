@@ -17,5 +17,10 @@ type ChatMsg = {
     user?: string | undefined
     content: string
 }
+type ConnectResponse = {
+    accepted: boolean
+    message: string
+    username: string | undefined
+}
 
 type Coords = { x: number; y: number }

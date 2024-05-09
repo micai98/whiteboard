@@ -6,7 +6,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #c5d1d4;
-  color: #eee;
+  color: #1e1e1e;
 }
 
 canvas {
@@ -17,6 +17,44 @@ canvas {
 
   background-color: #eee;
   border: 1px solid #aaa;
+}
+
+a {
+  color: inherit;
+}
+
+button, input {
+  font: inherit;
+  color: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+input {
+  border: 1px solid #aaa;
+}
+
+button {
+  border: transparent;
+  transition: 0.05s;
+  background-color: #333;
+  color: #eee;
+  font-weight: bold;
+}
+
+button:disabled {
+  color: #ccc;
+}
+
+button:hover {
+  transition: 0.05s;
+  background-color: #444;
+}
+
+button:active {
+  transition: 0.05s;
+  color: #ddd;
+  background-color: #313131;
 }
 
 #drawingboard {
@@ -78,6 +116,7 @@ canvas {
 }
 
 .topbar-colorpicker {
+  color: #eee;
   position: absolute;
   transform: translate(1rem, 1rem);
   background-color: #333;
@@ -85,6 +124,23 @@ canvas {
   border-radius: 8px;
   border: 1px solid #333;
   z-index: 100;
+}
+
+.topbar-colorpicker button {
+  color: #eee;
+  background-color: #333;
+  border: 1px solid #eee;
+  border-radius: 1rem;
+  width: 2.5rem;
+  margin-right: 0.2rem;
+}
+
+.topbar-colorpicker button:hover {
+  background-color: #555;
+}
+
+.topbar-colorpicker button:active {
+  background-color: #444;
 }
 
 .topbar hr {
