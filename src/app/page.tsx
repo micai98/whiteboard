@@ -1,10 +1,15 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import styles from "./Home.module.css"
 import Link from "next/link";
 
 const Home = () => {
     const [ roomcode, setRoomcode ] = useState<string>("");
+    const [ username, setUsername ] = useState<string>("");
+
+    useEffect(()=>{
+        setUsername(localStorage.getItem("username") || "")
+    },[]);
 
     return <main className={styles.main + " animate-popup"}>
         <h1>Whiteboard</h1>
@@ -14,7 +19,7 @@ const Home = () => {
             <input 
                 type="text" 
                 placeholder="Username" 
-                defaultValue={localStorage?.getItem("username") || ""} 
+                defaultValue={username} 
                 onChange={(e) => { localStorage?.setItem("username", e.target.value) }}
             />
         </div>
