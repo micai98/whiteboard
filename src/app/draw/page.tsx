@@ -17,8 +17,7 @@ import socket from "../socket";
 
 const Draw = () => {
     const router = useRouter();
-    const searchParams = useSearchParams();
-
+    const params = useSearchParams();
 
     const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
     const [currentTool, setCurrentTool] = useState<number>(Tool.Pencil);
@@ -106,24 +105,28 @@ const Draw = () => {
     useEffect(() => {
         const ctx = canvasRef.current?.getContext("2d");
 
-        if(socket.id) setRoomName(socket.id);
-
-        socket.emit("client_ready");
-
         socket.on("connect", () => {
-            if(socket.id) setRoomName(socket.id);
+            let joinData: Object = {};
+            const paramRoom: string | undefined = params.get("room")?.toUpperCase();
+            if(paramRoom) {
+                joinData = { room: paramRoom }
+            } else {
+                joinData = { create: "" }
+            }
+            socket.emit("client_join", joinData);
+            //if(socket.id) setRoomName(socket.id);
         });
 
         socket.on("disconnect", () => {
             chatPrint("Lost connection to server", ChatMsgVariant.SysError);
             setRoomName("Offline");
+            setIsLoading(true);
         })
 
         socket.on("connect_response", (data: ConnectResponse) => {
             console.log(data);
             if(data.accepted) {
-                //chatPrint("Connected as " + data.username);
-                setIsLoading(false);
+                chatPrint("Connected to server");
             } else {
                 chatPrint("Server refused connection: " + data.message, ChatMsgVariant.SysError);
             }
@@ -137,12 +140,23 @@ const Draw = () => {
 
         socket.on("canvas_receive_state", (state: string) => {
             console.log("Received state from server", state);
-            const img = new Image()
-            img.src = state;
-            img.onload = () => {
-                ctx?.drawImage(img, 0, 0);
+            if(state === "NEW_ROOM_EMPTY_CANVAS") {
+                setIsLoading(false);
+            } else {
+                const img = new Image();
+                img.src = state;
+                img.onload = () => {
+                    ctx?.drawImage(img, 0, 0);
+                    setIsLoading(false);
+                }
             }
         });
+
+        socket.on("room_welcome", (state: string) => {
+            chatPrint("Joined room " + state);
+            setRoomName(state);
+            router.replace("/draw?room="+state);
+        })
 
         socket.on("canvas_clear", () => {
             clearCanvas();
@@ -162,7 +176,7 @@ const Draw = () => {
             socket.off("connect");
             socket.off("connect_response");
             socket.off("disconnect");
-            socket.off("client_ready");
+            socket.off("room_welcome");
             socket.off("canvas_request_state");
             socket.off("canvas_receive_state");
             socket.off("canvas_clear");
