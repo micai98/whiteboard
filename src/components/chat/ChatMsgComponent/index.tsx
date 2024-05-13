@@ -30,7 +30,7 @@ const ChatMsgComponent = (props: ChatMsgProps) => {
             break;
     }
 
-    return <li data-timestamp={props.timestamp} className={displayClass}>
+    return <li data-timestamp={props.timestamp} className={`${displayClass} ${styles.msg}`}>
         { (props.variant == ChatMsgVariant.UserMsg && props.user) ? (
             <b>{props.user}: </b>
         ) : null}
