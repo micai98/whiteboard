@@ -1,6 +1,10 @@
+.msg {
+    overflow-wrap: break-word;
+}
+
 .msgInfo {
     font-style: italic;
-    color: #dfdfdf;
+    color: #c2eefb;
 }
 
 .msgUser {
