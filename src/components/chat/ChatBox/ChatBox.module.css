@@ -4,7 +4,7 @@
     bottom: 0.5rem;
     left: 0.5rem;
     line-height: 1.5rem;
-    background-color: #2222222d;
+    background-color: var(--hud-bg);
     padding: 0.5rem;
     min-width: 20rem;
     max-width: 26rem;

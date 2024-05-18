@@ -23,4 +23,19 @@ type ConnectResponse = {
     username: string | undefined
 }
 
+type RoomInfo = {
+    roomcode: uid
+    uid: number
+}
+
+type RoomState = {
+    host: number
+    users: Object<any>
+    usercount: number
+}
+
+type UserStateRefType = Map<number,[Coords, number]>
+
+
+
 type Coords = { x: number; y: number }

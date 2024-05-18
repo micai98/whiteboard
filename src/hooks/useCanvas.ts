@@ -1,14 +1,14 @@
-import { MouseEventHandler, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
-export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) => {
+export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void, onMove: (coords: Coords) => void) => {
     const [mouseDown, setMouseDown] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const prevCoords = useRef<null | Coords>(null);
-    const [ cameraScale, setCameraScale ] = useState<number>(1.0);
+    const [ canvasCameraScale, setCanvasCameraScale ] = useState<number>(1.0);
 
     const onZoom = (ref: any) => {
-        if(ref) setCameraScale(ref.state.scale);
+        if(ref) setCanvasCameraScale(ref.state.scale);
     }
 
     const onMouseDown = (e: React.MouseEvent) => {
@@ -39,10 +39,9 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) 
             const ctx = canvasRef.current?.getContext("2d");
             if(!ctx || !curCoords) return;
 
+            onMove(curCoords);
             if(mouseDown) onDraw({ctx, curCoords, prevCoords: prevCoords.current});
             prevCoords.current = curCoords;
-            console.log("camscale: " + cameraScale);
-
         }
 
         const mouseDownHandler = (e: MouseEvent) => {
@@ -50,6 +49,7 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) 
             const ctx = canvasRef.current?.getContext("2d");
             if(!ctx || !curCoords) return;
 
+            // this is here to make sure something gets drawn even if the user doesn't drag the mouse
             if(e.button == 0) onDraw({ctx, curCoords, prevCoords: prevCoords.current});
         }
 
@@ -63,22 +63,23 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void) 
             if(!canvas) return;
 
             const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / cameraScale;
-            const y = (e.clientY - rect.top) / cameraScale;
+            const x = (e.clientX - rect.left) / canvasCameraScale;
+            const y = (e.clientY - rect.top) / canvasCameraScale;
 
             return {x, y}
         }
 
+        
         canvasRef.current?.addEventListener("mousedown", mouseDownHandler);
         window.addEventListener("mousemove", handler);
         window.addEventListener("mouseup", mouseUpHandler);
 
         return () => { 
-            window.removeEventListener("mousemove", handler);
             canvasRef.current?.removeEventListener("mousedown", mouseDownHandler);
+            window.removeEventListener("mousemove", handler);
             window.removeEventListener("mouseup", mouseUpHandler);
         }
     }, [onDraw]);
 
-    return {canvasRef, onMouseDown, clearCanvas, onZoom}
+    return {canvasRef, onMouseDown, clearCanvas, setCanvasCameraScale}
 }
