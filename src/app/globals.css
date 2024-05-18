@@ -18,7 +18,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--main-bg);
-  color: var(--main-col)
+  color: var(--main-col);
+  overflow: hidden;
 }
 
 canvas {
@@ -180,6 +181,24 @@ svg {
 
 .topbar-colorpicker button:active {
   background-color: var(--panel-bg-hover);
+}
+
+.topbar-menu {
+  color: var(--panel-col);
+  position: absolute;
+  right: 1rem;
+  transform: translate(0rem, 1rem);
+  background-color: var(--panel-bg);
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--panel-bg);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-menu button {
+  text-align: right;
 }
 
 .topbar hr {

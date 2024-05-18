@@ -24,6 +24,7 @@ const Draw = () => {
     const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
     const [showRoomStats, setShowRoomStats] = useState<boolean>(false);
     const [showChat, setShowChat] = useState<boolean>(true);
+    const [showMenu, setShowMenu] = useState<boolean>(false);
 
     const [currentTool, setCurrentTool] = useState<number>(Tool.Pencil);
     const [color, setColor] = useState<string>("#000000");
@@ -305,6 +306,8 @@ const Draw = () => {
                     <ToolButton
                         label="Menu"
                         icon={<BiMenu />}
+                        pressed={showMenu}
+                        onClick={() => { setShowMenu(!showMenu) }}
                     />
                 </div>
 
@@ -320,6 +323,16 @@ const Draw = () => {
                 <button onClick={() => {changeLineWidth(8)}}>8</button>
                 <button onClick={() => {changeLineWidth(12)}}>12</button>
                 <button onClick={() => {changeLineWidth(24)}}>24</button>
+            </div>
+            : null }
+
+            { showMenu ? 
+            <div className="topbar-menu animate-fadein">
+                {roomInfo?.uid == roomState?.host ? 
+                    <button onClick={() => {socket.emit("command", "forceclear")}}>Force clear</button> 
+                : null}
+                
+                <button onClick={() => {router.push("/")}}>Quit</button>
             </div>
             : null }
 
