@@ -1,0 +1,54 @@
+.user {
+    background-color: transparent;
+    border-radius: 8px;
+    padding: 0.5rem;
+
+    display: flex;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1em;
+}
+
+.userId {
+    font-weight: bold;
+}
+
+.userName {
+    display: block;
+    max-width: 16rem;
+    overflow: hidden;
+
+}
+
+.userNameExtra {
+    opacity: 0.5;
+    margin-left: 0.25rem;
+    font-style: italic;
+    font-size: 0.8rem;
+}
+
+.userButtons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.user button {
+    transition: 0.05s;
+    position: relative;
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 8px;
+    color: #eee;
+  
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1.25rem;
+}
+
+.user:hover {
+    transition: 0.05s;
+    background-color: #ffffff12
+}

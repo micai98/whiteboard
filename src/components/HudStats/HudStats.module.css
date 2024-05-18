@@ -1,0 +1,13 @@
+.hudstats {
+    transition: 0.5s;
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    line-height: 1.5rem;
+    color: var(--panel-col);
+    background-color: var(--hud-bg);
+    padding: 0.5rem;
+    border-radius: 8px;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px #000;
+}
