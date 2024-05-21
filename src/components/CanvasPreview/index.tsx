@@ -69,7 +69,7 @@ const CanvasPreview = (props: CanvasPreviewProps) => {
             if(props.roomState) {
                 remoteUserCoords.current.forEach((data, uid) => {
                     const lineWidth = remoteUserBrush.current.get(uid)?.[0] || 5;
-                    drawUser(ctx, data, lineWidth, props.roomState?.users[uid]);
+                    if(props.roomState?.users[uid]) drawUser(ctx, data, lineWidth, props.roomState.users[uid]);
                 });
             }
         }
