@@ -52,6 +52,7 @@ const Draw = () => {
     }
 
     function handleCanvasAction({prevCoords, curCoords, ctx}: Draw) {
+        if(isLoading) return;
         if(currentTool == Tool.Pencil) {
             createLine({ctx, prevCoords, curCoords, color, lineWidth})
             return;
