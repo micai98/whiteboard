@@ -11,10 +11,33 @@
     border-radius: 0.5rem;
     padding: 2rem;
 
+    
+
+    animation: popup 0.5s;
+}
+
+.mainContent {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
+}
+
+.mainLoading {
+    width: 4rem;
+    height: 4rem;
+}
+
+.mainError {
+    position: absolute;
+    bottom: -1.5rem;
+    width: 100vh;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #333;
+    font-size: 0.95rem;
+    user-select: none;
+    vertical-align: text-bottom;
 
     animation: popup 0.5s;
 }

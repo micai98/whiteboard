@@ -126,9 +126,14 @@ const Draw = () => {
     // establish connection
     useEffect(() => {
         const username: string | null = localStorage.getItem("username");
+        const paramRoom: string | undefined = params.get("room")?.toUpperCase();
         if (!username) {
             chatPrint("Username not set - Returning to main menu");
-            router.push("/");
+            if(paramRoom) {
+                router.push(`/?err_name=${paramRoom}`);
+            } else {
+                router.push("/");
+            }
         }
         socket.auth = {
             "user_name": username
@@ -316,7 +321,7 @@ const Draw = () => {
             { showColorPicker ? 
             <div className="topbar-colorpicker animate-fadein">
                 Color
-                <SketchPicker disableAlpha={false} color={color} onChange={(e) => setColor(e.hex)} />
+                <SketchPicker disableAlpha={true} color={color} onChange={(e) => setColor(e.hex)} />
                 Line Width <br />
                 <button onClick={() => {changeLineWidth(2)}}>2</button>
                 <button onClick={() => {changeLineWidth(5)}}>5</button>

@@ -1,46 +1,93 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
+import { ChangeEvent, useEffect, useRef, useState } from "react"
 import styles from "./Home.module.css"
 import Link from "next/link";
+import Spinner from "@/components/ui/Spinner";
+import { validateUsername } from "@/utils/validateUsername";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const Home = () => {
-    const [ roomcode, setRoomcode ] = useState<string>("");
-    const [ username, setUsername ] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(true);
+    const [roomcode, setRoomcode] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
+    const [errorText, setErrorText] = useState<string>("");
 
-    useEffect(()=>{
-        setUsername(localStorage.getItem("username") || "")
-    },[]);
+    const router = useRouter();
+    const params = useSearchParams();
 
-    return <main className={styles.main + " animate-popup"}>
-        <h1>Whiteboard</h1>
-        <br />
+    useEffect(() => {
+        setUsername(localStorage.getItem("username") || "");
 
-        <div className={styles.textbox}>
-            <input 
-                type="text" 
-                placeholder="Username" 
-                defaultValue={username} 
-                onChange={(e) => { localStorage?.setItem("username", e.target.value) }}
-            />
-        </div>
+        const err_name = params.get("err_name")
+        if(err_name) {
+            router.replace("/")
+            setErrorText("You must set a username before joining a room.");
+            setRoomcode(err_name);
+        }
 
-        <Link href="/draw">
-            <button>Create room</button>
-        </Link>
+        setLoading(false);
+    }, []);
 
-        <div className={styles.textbox}>
-            <input
-                type="text" 
-                placeholder="Room code"
-                onChange={(e) => {setRoomcode(e.target.value)}}
-            />
-        </div>
+    function onUsernameChange(e: ChangeEvent<HTMLInputElement>) {
+        if (e.target.value.length > 23) {
+            e.preventDefault();
+        } else {
+            setUsername(e.target.value);
+            localStorage?.setItem("username", e.target.value);
+        }
+    }
 
-        <Link href={"/draw?room=" + roomcode}>
-            <button>Join room</button>
-        </Link>
+    return <>
+        {loading ? <main className="centerscreen"><Spinner size="6rem" /></main> : (
+            <main className={styles.main + " animate-popup"}>
+                <div className={styles.mainContent}>
+                    <h1>Whiteboard</h1>
+                    <br />
 
-    </main>
+                    <form className={styles.mainContent}>
+                        <div className={styles.textbox}>
+                            <input
+                                type="text"
+                                placeholder="Username"
+                                defaultValue={username}
+                                value={username}
+                                onChange={onUsernameChange}
+                                required
+                            />
+                        </div>
+
+                        <Link onClick={() => { setLoading(true) }} href="/draw" tabIndex={-1}>
+                            <button
+                                type={"submit"}
+                                disabled={!validateUsername(username)}
+                            >Create room</button>
+                        </Link>
+
+                        <div className={styles.textbox}>
+                            <input
+                                type="text"
+                                placeholder="Room code"
+                                value={roomcode}
+                                onChange={(e) => { setRoomcode(e.target.value) }}
+                            />
+                        </div>
+
+                        <Link href={"/draw?room=" + roomcode} tabIndex={-1}>
+                            <button
+                                onClick={() => { setLoading(true) }}
+                                disabled={!validateUsername(username) || roomcode.length < 1}
+                            >Join room</button>
+                        </Link>
+                    </form>
+                </div>
+                {errorText.length > 0 ? (
+                    <div className={styles.mainError}>
+                        {errorText}
+                    </div>
+                ) : (null)}
+            </main>
+        )}
+    </>
 }
 
 export default Home;

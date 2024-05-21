@@ -8,6 +8,7 @@
   --panel-bg: #333;
   --panel-col: #eee;
   --panel-bg-hover: #444;
+  --panel-bg-hoverbad: #3a3a3a;
   --panel-bg-active: #313131;
   --tpanel-bg: #1f1f1fbd;
   --hud-bg: #2222222d;
@@ -62,10 +63,6 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
-  color: #ccc;
-}
-
 button:hover {
   transition: 0.05s;
   background-color: var(--panel-bg-hover);
@@ -75,6 +72,26 @@ button:active {
   transition: 0.05s;
   color: #ddd;
   background-color: var(--panel-bg-active);
+}
+
+button:disabled {
+  color: #c1c0c0;
+  cursor: not-allowed;
+}
+
+button:hover:disabled, button:active:disabled {
+  color: #ccc;
+  background-color: var(--panel-bg-hoverbad);
+}
+
+
+
+button svg {
+  color: inherit;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 #drawingboard {
@@ -134,14 +151,6 @@ button:active {
   color: var(--panel-col);
 
   font-size: 1.25rem;
-}
-
-svg {
-  color: inherit;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 
 .topbar button:hover {
