@@ -57,13 +57,10 @@ const CanvasPreview = (props: CanvasPreviewProps) => {
         // Local User Preview
         const ctx = previewRef.current?.getContext("2d");
 
-        console.log("refreshed preview");
-
         const renderPreview = () => {
             const rect = previewRef.current?.getBoundingClientRect();
             if(!ctx || !rect) return;
             ctx.clearRect(0, 0, rect.width, rect.height);
-            console.log(localUserRef.current);
             // drawing local user
             drawLocalUser(ctx, rect);
             if(props.roomState) {

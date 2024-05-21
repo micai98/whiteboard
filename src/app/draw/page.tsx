@@ -169,7 +169,6 @@ const Draw = () => {
         })
 
         socket.on("connect_response", (data: ConnectResponse) => {
-            console.log(data);
             if(data.accepted) {
                 chatPrint("Connected to server");
             } else {
@@ -184,7 +183,6 @@ const Draw = () => {
         });
 
         socket.on("canvas_receive_state", (state: string) => {
-            console.log("Received state from server", state);
             if(state === "NEW_ROOM_EMPTY_CANVAS") {
                 setIsLoading(false);
             } else {
@@ -214,7 +212,6 @@ const Draw = () => {
         socket.on("user_draw", (data: Array<any>) => {
             if(!ctx) return;
             drawLine(replicateLine(ctx, data));
-            console.log(data);
         });
 
         socket.on("user_move", (data: Array<number>) =>  {
