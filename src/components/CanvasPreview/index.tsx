@@ -71,13 +71,14 @@ const CanvasPreview = (props: CanvasPreviewProps) => {
             }
         }
 
-        const onMouseMove = (e: MouseEvent) => {
+        const onPointerMove = (e: MouseEvent) => {
             localUserRef.current = {x: e.clientX, y: e.clientY}
 
             renderPreview();
         }
 
-        window.addEventListener("pointermove", onMouseMove);
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerdown", onPointerMove);
 
         socket.on("user_move", (data: Array<number>) => {
            remoteUserCoords.current?.set(data[0], {x: data[1], y: data[2]});
@@ -89,7 +90,8 @@ const CanvasPreview = (props: CanvasPreviewProps) => {
         });
 
         return () => {
-            window.removeEventListener("pointermove", onMouseMove);
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerdown", onPointerMove);
             socket.off("user_move");
             socket.off("user_width");
         }
