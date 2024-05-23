@@ -364,7 +364,7 @@ const Draw = () => {
                         text={showChat ? "Hide chat" : "Show chat"}
                         icon={<BiMessageRoundedDetail />}
                         className="mobile-only"
-                        onClick={() => { document.getElementById("chatbox-input")?.focus(); setShowMenu(false) }}
+                        onClick={() => { setShowChat(!showChat); setShowMenu(false) }}
                     />
 
                     <MenuButton
