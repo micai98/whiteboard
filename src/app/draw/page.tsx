@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail, BiSolidUserDetail, BiMenu, BiMessageRoundedAdd, BiPowerOff, BiSolidTrashAlt } from "react-icons/bi";
+import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail, BiSolidUserDetail, BiMenu, BiMessageRoundedAdd, BiPowerOff, BiSolidTrashAlt, BiSave } from "react-icons/bi";
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef, StateType, ReactZoomPanPinchState } from "react-zoom-pan-pinch";
 import { SketchPicker } from "react-color";
 
@@ -33,7 +33,7 @@ const Draw = () => {
     const [currentTool, setCurrentTool] = useState<number>(Tool.Pencil);
     const [color, setColor] = useState<string>("#000000");
     const [lineWidth, setLineWidth] = useState<number>(5);
-    const { canvasRef, clearCanvas, setCanvasCameraScale } = useCanvas(handleCanvasAction, handleCanvasMovement); // hook for the drawing canvas, i probably should've made it into a component :|
+    const { canvasRef, saveImage, clearCanvas, setCanvasCameraScale } = useCanvas(handleCanvasAction, handleCanvasMovement); // hook for the drawing canvas, i probably should've made it into a component :|
 
 
     const [cameraState, setCameraState] = useState<ReactZoomPanPinchState>({ positionX: 0, positionY: 0, scale: 1.0, previousScale: 1.0 });
@@ -43,7 +43,11 @@ const Draw = () => {
     const [roomState, setRoomState] = useState<RoomState>(); // received every time the user list or room settings change. right now contains the current host's UID and a list of users
     const cameraStateRef = useRef<StateType | null>(null); // stores the viewport position and scale (zoom). used by the preview to display things correctly
 
-    // used to change line width in both the actual canvas and preview, will try to come up with a cleaner solution later
+    function resetRoomState() {
+        setRoomInfo({roomcode: "Offline", uid: -1});
+        setRoomState({host: 0, users: {}, usercount: 0});
+    }
+
     function changeLineWidth(width: number) {
         setLineWidth(width);
         socket.emit("user_width", width);
@@ -114,7 +118,7 @@ const Draw = () => {
         drawLine({ ctx, prevCoords, curCoords, color, lineWidth });
         if (!curCoords) return;
         // converting to a list to send less data
-        let startCoords: Coords = prevCoords ? prevCoords : curCoords
+        //let startCoords: Coords = prevCoords ? prevCoords : curCoords
         socket.emit("user_draw", [prevCoords?.x, prevCoords?.y, curCoords?.x, curCoords?.y, color, lineWidth]);
     }
 
@@ -154,6 +158,7 @@ const Draw = () => {
         socket.auth = {
             "user_name": username
         }
+        resetRoomState();
         socket.connect();
 
         return () => {
@@ -179,6 +184,7 @@ const Draw = () => {
 
         socket.on("disconnect", () => {
             chatPrint("Lost connection to server", ChatMsgVariant.SysError);
+            resetRoomState();
             setIsLoading(true);
         })
 
@@ -391,6 +397,12 @@ const Draw = () => {
                         />
 
                         : null}
+
+                    <MenuButton
+                        text={"Save as PNG"}
+                        icon={<BiSave />}
+                        onClick={() => { saveImage(roomInfo?.roomcode) }}
+                    />
 
                     <MenuButton
                         text={"Quit"}

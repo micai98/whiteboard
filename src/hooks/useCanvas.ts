@@ -11,6 +11,19 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void, 
         if(ref) setCanvasCameraScale(ref.state.scale);
     }
 
+    const saveImage = (filename: string = "canvas") => {
+        const canvas = canvasRef.current;
+        if(!canvas) return;
+        const image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        
+        const a = document.createElement("a");
+        a.href = image;
+        a.download = filename + ".png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
     const getCoords = (e: PointerEvent) => {
         const canvas = canvasRef.current;
         if(!canvas) return;
@@ -81,5 +94,5 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void, 
         }
     }, [onDraw]);
 
-    return {canvasRef, clearCanvas, setCanvasCameraScale}
+    return {canvasRef, saveImage, clearCanvas, setCanvasCameraScale}
 }
