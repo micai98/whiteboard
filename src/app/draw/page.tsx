@@ -115,10 +115,21 @@ const Draw = () => {
     }
 
     function replicateLine(ctx: CanvasRenderingContext2D, data: Array<any>): DrawLineProps {
+        let prevCoords = {x: data[0], y: data[1]}
+        let curCoords = {x: data[2], y: data[3]}
+
+        if(!data[0] || !data[1]) {
+            prevCoords = curCoords;
+        } 
+
+        if(!data[2] || !data[3]) {
+            curCoords = prevCoords;
+        }
+
         return {
             ctx: ctx,
-            prevCoords: {x: data[0], y: data[1]}, 
-            curCoords: {x: data[2], y: data[3]},
+            prevCoords: prevCoords,
+            curCoords: curCoords,
             color: data[4],
             lineWidth: data[5]
         }
