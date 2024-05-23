@@ -12,10 +12,12 @@
   --panel-bg-active: #313131;
   --tpanel-bg: #1f1f1fbd;
   --hud-bg: #2222222d;
-
+  --hud-bg-light: #2222221e;
 }
 
-body {
+html, body {
+  width: 100vw;
+  height: 100vh;
   margin: 0;
   padding: 0;
   background-color: var(--main-bg);
@@ -124,7 +126,7 @@ button svg {
   flex-direction: column;
   justify-content: space-evenly;
   gap: 1px 1px;
-  align-items: flex-end;
+  align-items: center;
   align-content: center;
 }
 
@@ -193,6 +195,7 @@ button svg {
 }
 
 .topbar-menu {
+  min-width: 12rem;
   color: var(--panel-col);
   position: absolute;
   right: 1rem;
@@ -206,15 +209,18 @@ button svg {
   flex-direction: column;
 }
 
-.topbar-menu button {
-  text-align: right;
-}
-
 .topbar hr {
   display: block;
   border: 0;
   border-left: 1px solid var(--panel-bg-hover);
   height: 2rem;
+}
+
+.topbar-menu hr {
+  width: 90%;
+  border: 0;
+  border-bottom: 1px solid var(--panel-bg-hover);
+  margin-bottom: 0;
 }
 
 @keyframes topbar-slidein {
@@ -238,5 +244,22 @@ button svg {
 
   100% {
     opacity: 100%;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+}
+
+@media screen and (max-width: 600px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .topbar-menu button {
+    padding: 1rem;
   }
 }

@@ -9,7 +9,6 @@ interface CanvasPreviewProps {
     cameraState: StateType
     roomState: RoomState | undefined
     cameraStateRef: MutableRefObject<StateType | null>
-    userStateRef: RefObject<UserStateRefType>
     lineWidth: number
 }
 
@@ -60,7 +59,7 @@ const CanvasPreview = (props: CanvasPreviewProps) => {
         const renderPreview = () => {
             const rect = previewRef.current?.getBoundingClientRect();
             if(!ctx || !rect) return;
-            ctx.clearRect(0, 0, rect.width, rect.height);
+            ctx.clearRect(0, 0, props.width, props.height);
             // drawing local user
             drawLocalUser(ctx, rect);
             if(props.roomState) {
@@ -73,7 +72,6 @@ const CanvasPreview = (props: CanvasPreviewProps) => {
 
         const onPointerMove = (e: MouseEvent) => {
             localUserRef.current = {x: e.clientX, y: e.clientY}
-
             renderPreview();
         }
 

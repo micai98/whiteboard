@@ -1,0 +1,18 @@
+.menuButton {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+    font-weight: normal;
+}
+
+.menuButton:active {
+    background-color: #222;
+}
+
+.menuButton svg {
+    position: initial;
+    transform: initial;
+}

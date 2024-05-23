@@ -23,3 +23,14 @@
     scrollbar-color: #ffffff4b #0000002b;
     scrollbar-width: thin;
 }
+
+@media screen and (max-width: 600px) {
+    .chatbox {
+        font-size: 0.8rem;
+        padding: 0.25rem;
+        line-height: 1.3rem;
+        min-width: 70%;
+        max-width: 70%;
+        background-color: var(--hud-bg-light);
+    }
+}

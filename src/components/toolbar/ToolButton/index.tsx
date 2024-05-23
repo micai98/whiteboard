@@ -5,12 +5,14 @@ interface ToolButtonProps {
     onClick?: Function
     pressed?: boolean
     iconColor?: string
+    divClass?: string
 }
 
 const ToolButton = (props: ToolButtonProps) => {
     const defaults: ToolButtonProps = {
         pressed: false,
-        iconColor: "#fff"
+        iconColor: "#fff",
+        divClass: ""
     }
     props = { ...defaults, ...props }
     const handleClick = (e: React.MouseEvent) => {
@@ -18,7 +20,7 @@ const ToolButton = (props: ToolButtonProps) => {
     }
 
     return (
-        <div>
+        <div className={props.divClass}>
             <button
                 className="tool-button" type="button"
                 onClick={handleClick}

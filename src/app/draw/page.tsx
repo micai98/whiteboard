@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail, BiSolidUserDetail, BiSend, BiMenu } from "react-icons/bi";
-import { TransformWrapper, TransformComponent, useTransformContext, ReactZoomPanPinchRef, StateType, ReactZoomPanPinchState } from "react-zoom-pan-pinch";
+import { BiPencil, BiEraser, BiTrash, BiPalette, BiMove, BiSolidEyedropper, BiMessageRoundedDetail, BiSolidUserDetail, BiMenu, BiMessageRoundedAdd, BiPowerOff, BiSolidTrashAlt } from "react-icons/bi";
+import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef, StateType, ReactZoomPanPinchState } from "react-zoom-pan-pinch";
 import { SketchPicker } from "react-color";
 
 import { useCanvas } from "@/hooks/useCanvas";
@@ -16,6 +16,10 @@ import Spinner from "@/components/ui/Spinner";
 import socket from "../socket";
 import RoomStats from "@/components/room/RoomStats";
 import CanvasPreview from "@/components/CanvasPreview";
+import MenuButton from "@/components/menu/MenuButton";
+
+const cvsWidth = 1200;
+const cvsHeight = 800;
 
 const Draw = () => {
     const router = useRouter();
@@ -32,13 +36,12 @@ const Draw = () => {
     const { canvasRef, clearCanvas, setCanvasCameraScale } = useCanvas(handleCanvasAction, handleCanvasMovement); // hook for the drawing canvas, i probably should've made it into a component :|
 
 
-    const [ cameraState, setCameraState ] = useState<ReactZoomPanPinchState>({positionX: 0, positionY: 0, scale: 1.0, previousScale: 1.0});
+    const [cameraState, setCameraState] = useState<ReactZoomPanPinchState>({ positionX: 0, positionY: 0, scale: 1.0, previousScale: 1.0 });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [chatMessages, setChatMessages] = useState<Array<ChatMsg>>(new Array);
     const [roomInfo, setRoomInfo] = useState<RoomInfo>(); // received once, through "room_welcome" contains the room's code and the UID assigned to client by the server
     const [roomState, setRoomState] = useState<RoomState>(); // received every time the user list or room settings change. right now contains the current host's UID and a list of users
     const cameraStateRef = useRef<StateType | null>(null); // stores the viewport position and scale (zoom). used by the preview to display things correctly
-    const userStateRef = useRef<UserStateRefType>(null);
 
     // used to change line width in both the actual canvas and preview, will try to come up with a cleaner solution later
     function changeLineWidth(width: number) {
@@ -50,20 +53,20 @@ const Draw = () => {
         socket.emit("user_move", [coords.x, coords.y]);
     }
 
-    function handleCanvasAction({prevCoords, curCoords, ctx}: Draw) {
-        if(isLoading) return;
-        if(currentTool == Tool.Pencil) {
-            createLine({ctx, prevCoords, curCoords, color, lineWidth})
+    function handleCanvasAction({ prevCoords, curCoords, ctx }: Draw) {
+        if (isLoading) return;
+        if (currentTool == Tool.Pencil) {
+            createLine({ ctx, prevCoords, curCoords, color, lineWidth })
             return;
         }
 
         // no transparency support so an eraser is just a pencil that draws with the background color
-        if(currentTool == Tool.Eraser) {
-            createLine({ctx, prevCoords, curCoords, color: "#fff", lineWidth})
+        if (currentTool == Tool.Eraser) {
+            createLine({ ctx, prevCoords, curCoords, color: "#fff", lineWidth })
             return;
         }
 
-        if(currentTool == Tool.ColorPicker) {
+        if (currentTool == Tool.ColorPicker) {
             const data = ctx.getImageData(curCoords.x, curCoords.y, 1, 1).data;
             const hex = "#" + toHex(data[0]) + toHex(data[1]) + toHex(data[2]);
             setColor(hex);
@@ -100,28 +103,30 @@ const Draw = () => {
 
     // send commands from chat to the server. if there's no command prefix, automatically assume it's meant to be a chat message
     function chatHandleSubmit(text: string) {
-        if(text != "") {
-            if(text.startsWith("/")) text = text.substring(1);
+        if (text != "") {
+            if (text.startsWith("/")) text = text.substring(1);
             else text = "say " + text;
             socket.emit("command", text);
         }
     }
 
-    function createLine({prevCoords, curCoords, ctx, color, lineWidth}: DrawLineProps) {
-       drawLine({ctx, prevCoords, curCoords, color, lineWidth});
-       // converting to a list to send less data
-       socket.emit("user_draw", [prevCoords?.x, prevCoords?.y, curCoords?.x, curCoords?.y, color, lineWidth]);
+    function createLine({ prevCoords, curCoords, ctx, color, lineWidth }: DrawLineProps) {
+        drawLine({ ctx, prevCoords, curCoords, color, lineWidth });
+        if (!curCoords) return;
+        // converting to a list to send less data
+        let startCoords: Coords = prevCoords ? prevCoords : curCoords
+        socket.emit("user_draw", [prevCoords?.x, prevCoords?.y, curCoords?.x, curCoords?.y, color, lineWidth]);
     }
 
     function replicateLine(ctx: CanvasRenderingContext2D, data: Array<any>): DrawLineProps {
-        let prevCoords = {x: data[0], y: data[1]}
-        let curCoords = {x: data[2], y: data[3]}
+        let prevCoords = { x: data[0], y: data[1] }
+        let curCoords = { x: data[2], y: data[3] }
 
-        if(!data[0] || !data[1]) {
+        if (!data[0] || !data[1]) {
             prevCoords = curCoords;
-        } 
+        }
 
-        if(!data[2] || !data[3]) {
+        if (!data[2] || !data[3]) {
             curCoords = prevCoords;
         }
 
@@ -140,7 +145,7 @@ const Draw = () => {
         const paramRoom: string | undefined = params.get("room")?.toUpperCase();
         if (!username) {
             chatPrint("Username not set - Returning to main menu");
-            if(paramRoom) {
+            if (paramRoom) {
                 router.push(`/?err_name=${paramRoom}`);
             } else {
                 router.push("/");
@@ -163,7 +168,7 @@ const Draw = () => {
         socket.on("connect", () => {
             let joinData: Object = {};
             const paramRoom: string | undefined = params.get("room")?.toUpperCase();
-            if(paramRoom) {
+            if (paramRoom) {
                 joinData = { room: paramRoom }
             } else {
                 joinData = { create: "" }
@@ -178,21 +183,21 @@ const Draw = () => {
         })
 
         socket.on("connect_response", (data: ConnectResponse) => {
-            if(data.accepted) {
+            if (data.accepted) {
                 chatPrint("Connected to server");
             } else {
                 chatPrint("Server refused connection: " + data.message, ChatMsgVariant.SysError);
             }
-            
+
         });
 
         socket.on("canvas_request_state", () => {
-            if(!canvasRef.current?.toDataURL()) return;
+            if (!canvasRef.current?.toDataURL()) return;
             socket.emit("canvas_state", canvasRef.current.toDataURL());
         });
 
         socket.on("canvas_receive_state", (state: string) => {
-            if(state === "NEW_ROOM_EMPTY_CANVAS") {
+            if (state === "NEW_ROOM_EMPTY_CANVAS") {
                 setIsLoading(false);
             } else {
                 const img = new Image();
@@ -206,7 +211,7 @@ const Draw = () => {
 
         socket.on("room_welcome", (data: RoomInfo) => {
             setRoomInfo(data);
-            router.replace("/draw?room="+data.roomcode);
+            router.replace("/draw?room=" + data.roomcode);
             chatPrint(`Connected to room ${data.roomcode}`);
         });
 
@@ -219,13 +224,8 @@ const Draw = () => {
         });
 
         socket.on("user_draw", (data: Array<any>) => {
-            if(!ctx) return;
+            if (!ctx) return;
             drawLine(replicateLine(ctx, data));
-        });
-
-        socket.on("user_move", (data: Array<number>) =>  {
-            const prev = userStateRef.current?.get(data[0])
-            // userStateRef.current?.set(data[0], {x: data[1], y:data[2]})
         });
 
         socket.on("msg_broadcast", (data: ChatMsg) => {
@@ -242,7 +242,6 @@ const Draw = () => {
             socket.off("canvas_receive_state");
             socket.off("canvas_clear");
             socket.off("user_draw");
-            socket.off("user_move");
             socket.off("msg_broadcast");
         }
     }, [canvasRef, socket]);
@@ -255,19 +254,19 @@ const Draw = () => {
                         label="Pencil"
                         icon={<BiPencil />}
                         pressed={currentTool == Tool.Pencil}
-                        onClick={() => {setCurrentTool(Tool.Pencil) }}
+                        onClick={() => { setCurrentTool(Tool.Pencil) }}
                     />
                     <ToolButton
                         label="Eraser"
                         icon={<BiEraser />}
                         pressed={currentTool == Tool.Eraser}
-                        onClick={() => {setCurrentTool(Tool.Eraser) }}
+                        onClick={() => { setCurrentTool(Tool.Eraser) }}
                     />
                     <ToolButton
                         label="Move camera"
                         icon={<BiMove />}
                         pressed={currentTool == Tool.Camera}
-                        onClick={() => {setCurrentTool(Tool.Camera) }}
+                        onClick={() => { setCurrentTool(Tool.Camera) }}
                     />
                     <hr />
                     <ToolButton
@@ -282,18 +281,20 @@ const Draw = () => {
                         icon={<BiSolidEyedropper />}
                         pressed={currentTool == Tool.ColorPicker}
                         onClick={() => { setCurrentTool(Tool.ColorPicker) }}
-                    /> 
-                    <ToolButton 
+                    />
+                    <ToolButton
                         label="Clear"
                         icon={<BiTrash />}
-                        onClick={() => {socket.emit("command", "clear")}}
+                        onClick={() => { socket.emit("command", "clear") }}
+                        divClass="desktop-only"
                     />
-                    <hr />
+                    <hr className="desktop-only" />
                     <ToolButton
                         label="Show chat"
                         icon={<BiMessageRoundedDetail />}
                         pressed={showChat}
                         onClick={() => { setShowChat(!showChat) }}
+                        divClass="desktop-only"
                     />
                     {/* <ToolButton
                         label="Send message"
@@ -305,16 +306,18 @@ const Draw = () => {
                         icon={<BiSolidUserDetail />}
                         pressed={showRoomStats}
                         onClick={() => { setShowRoomStats(!showRoomStats) }}
+                        divClass="desktop-only"
                     />
                 </div>
                 <div className="topbar-group">
-                    <div className="topbar-roomdetails">
+                    <div className="topbar-roomdetails desktop-only">
                         <p>{roomInfo?.roomcode ? roomInfo.roomcode : "Offline"}</p>
                         {roomState?.usercount ? (
-                            <p className="topbar-roomdetails-online">{roomState.usercount} user{ roomState.usercount > 1 ? ("s") : null }</p>
+                            <p className="topbar-roomdetails-online">{roomState.usercount} user{roomState.usercount > 1 ? ("s") : null}</p>
                         ) : null}
                     </div>
-                    
+
+                    <hr className="mobile-only" />
                     <ToolButton
                         label="Menu"
                         icon={<BiMenu />}
@@ -325,64 +328,113 @@ const Draw = () => {
 
             </div>
 
-            { showColorPicker ? 
-            <div className="topbar-colorpicker animate-fadein">
-                Color
-                <SketchPicker disableAlpha={true} color={color} onChange={(e) => setColor(e.hex)} />
-                Line Width <br />
-                <button onClick={() => {changeLineWidth(2)}}>2</button>
-                <button onClick={() => {changeLineWidth(5)}}>5</button>
-                <button onClick={() => {changeLineWidth(8)}}>8</button>
-                <button onClick={() => {changeLineWidth(12)}}>12</button>
-                <button onClick={() => {changeLineWidth(24)}}>24</button>
-            </div>
-            : null }
-
-            { showMenu ? 
-            <div className="topbar-menu animate-fadein">
-                {roomInfo?.uid == roomState?.host ? 
-                    <button onClick={() => {socket.emit("command", "forceclear")}}>Force clear</button> 
+            {showColorPicker ?
+                <div className="topbar-colorpicker animate-fadein">
+                    Color
+                    <SketchPicker disableAlpha={true} color={color} onChange={(e) => setColor(e.hex)} />
+                    Line Width <br />
+                    <button onClick={() => { changeLineWidth(2) }}>2</button>
+                    <button onClick={() => { changeLineWidth(5) }}>5</button>
+                    <button onClick={() => { changeLineWidth(8) }}>8</button>
+                    <button onClick={() => { changeLineWidth(12) }}>12</button>
+                    <button onClick={() => { changeLineWidth(24) }}>24</button>
+                </div>
                 : null}
-                
-                <button onClick={() => {router.push("/")}}>Quit</button>
-            </div>
-            : null }
 
-            {isLoading ? <div className="centerscreen"><Spinner size="6rem"/></div> : null}
+            {showMenu ?
+                <div className="topbar-menu animate-fadein">
+                    {/* Mobile only room info */}
+                    <div className="topbar-roomdetails mobile-only">
+                        <p>{roomInfo?.roomcode ? roomInfo.roomcode : "Offline"}</p>
+                        {roomState?.usercount ? (
+                            <p className="topbar-roomdetails-online">{roomState.usercount} user{roomState.usercount > 1 ? ("s") : null}</p>
+                        ) : null}
+                        <hr />
+                    </div>
 
-            <TransformWrapper 
-                minScale={0.5} 
-                disabled={currentTool != Tool.Camera} 
+                    {/* Mobile only buttons */}
+                    <MenuButton
+                        text="Use chat"
+                        icon={<BiMessageRoundedAdd />}
+                        className="mobile-only"
+                        onClick={() => { document.getElementById("chatbox-input")?.focus(); setShowMenu(false) }}
+                    />
+
+                    <MenuButton
+                        text={showChat ? "Hide chat" : "Show chat"}
+                        icon={<BiMessageRoundedDetail />}
+                        className="mobile-only"
+                        onClick={() => { document.getElementById("chatbox-input")?.focus(); setShowMenu(false) }}
+                    />
+
+                    <MenuButton
+                        text={showChat ? "Show user list" : "Hide user list"}
+                        icon={<BiSolidUserDetail />}
+                        className="mobile-only"
+                        onClick={() => { setShowRoomStats(!showRoomStats); setShowMenu(false) }}
+                    />
+
+                    <MenuButton
+                        text={"Vote to clear"}
+                        icon={<BiTrash />}
+                        className="mobile-only"
+                        onClick={() => { socket.emit("command", "clear"); setShowMenu(false) }}
+                    />
+
+                    {/* Host only buttons */}
+                    {roomInfo?.uid == roomState?.host ?
+
+                        <MenuButton
+                            text={"Force clear"}
+                            icon={<BiSolidTrashAlt />}
+                            onClick={() => { socket.emit("command", "forceclear"); setShowMenu(false) }}
+                        />
+
+                        : null}
+
+                    <MenuButton
+                        text={"Quit"}
+                        icon={<BiPowerOff />}
+                        onClick={() => { router.push("/") }}
+                    />
+                </div>
+                : null}
+
+            {isLoading ? <div className="centerscreen"><Spinner size="6rem" /></div> : null}
+
+            <TransformWrapper
+                minScale={0.5}
+                disabled={currentTool != Tool.Camera}
                 onTransformed={onCameraTransformed}
                 onInit={onCameraInit}
+                limitToBounds={false}
             >
                 <TransformComponent>
                     <div id="drawingboard" hidden={isLoading}>
-                        <canvas ref={canvasRef} className="centerscreen animate-fadein" width={800} height={600}></canvas>
-                        <CanvasPreview 
-                            width={800}
-                            height={600}
+                        <canvas ref={canvasRef} className="centerscreen animate-fadein" width={cvsWidth} height={cvsHeight}></canvas>
+                        <CanvasPreview
+                            width={cvsWidth}
+                            height={cvsHeight}
                             cameraStateRef={cameraStateRef}
                             cameraState={cameraState}
                             roomState={roomState}
-                            userStateRef={userStateRef}
                             lineWidth={lineWidth}
                         />
                     </div>
-                    
+
                 </TransformComponent>
             </TransformWrapper>
 
             <div className="animate-fadein" hidden={!showChat}>
-                <ChatBox messages={chatMessages} handleSubmit={chatHandleSubmit}/>
+                <ChatBox messages={chatMessages} handleSubmit={chatHandleSubmit} />
             </div>
 
             <div className="animate-fadein" hidden={!(showRoomStats && socket.connected)}>
-                <RoomStats 
-                    closeButtonHandler={() => {setShowRoomStats(false)}}
+                <RoomStats
+                    closeButtonHandler={() => { setShowRoomStats(false) }}
                     roomState={roomState}
                     roomInfo={roomInfo}
-                    userButtonHandler={(command:string) => {socket.emit("command", command)}}
+                    userButtonHandler={(command: string) => { socket.emit("command", command) }}
                 />
             </div>
         </>
