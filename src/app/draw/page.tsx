@@ -29,13 +29,12 @@ const Draw = () => {
     const [currentTool, setCurrentTool] = useState<number>(Tool.Pencil);
     const [color, setColor] = useState<string>("#000000");
     const [lineWidth, setLineWidth] = useState<number>(5);
-    const { canvasRef, onMouseDown, clearCanvas, setCanvasCameraScale } = useCanvas(handleCanvasAction, handleCanvasMovement); // hook for the drawing canvas, i probably should've made it into a component :|
+    const { canvasRef, clearCanvas, setCanvasCameraScale } = useCanvas(handleCanvasAction, handleCanvasMovement); // hook for the drawing canvas, i probably should've made it into a component :|
 
 
     const [ cameraState, setCameraState ] = useState<ReactZoomPanPinchState>({positionX: 0, positionY: 0, scale: 1.0, previousScale: 1.0});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [chatMessages, setChatMessages] = useState<Array<ChatMsg>>(new Array);
-    const [roomName, setRoomName] = useState<string>("Offline");
     const [roomInfo, setRoomInfo] = useState<RoomInfo>(); // received once, through "room_welcome" contains the room's code and the UID assigned to client by the server
     const [roomState, setRoomState] = useState<RoomState>(); // received every time the user list or room settings change. right now contains the current host's UID and a list of users
     const cameraStateRef = useRef<StateType | null>(null); // stores the viewport position and scale (zoom). used by the preview to display things correctly
@@ -175,7 +174,6 @@ const Draw = () => {
 
         socket.on("disconnect", () => {
             chatPrint("Lost connection to server", ChatMsgVariant.SysError);
-            setRoomName("Offline");
             setIsLoading(true);
         })
 
@@ -359,7 +357,7 @@ const Draw = () => {
                 onInit={onCameraInit}
             >
                 <TransformComponent>
-                    <div id="drawingboard" onMouseDown={onMouseDown} hidden={isLoading}>
+                    <div id="drawingboard" hidden={isLoading}>
                         <canvas ref={canvasRef} className="centerscreen animate-fadein" width={800} height={600}></canvas>
                         <CanvasPreview 
                             width={800}

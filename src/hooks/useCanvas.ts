@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void, onMove: (coords: Coords) => void) => {
-    const [mouseDown, setMouseDown] = useState(false);
+    const [pointerDown, setPointerDown] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const prevCoords = useRef<null | Coords>(null);
@@ -11,8 +11,14 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void, 
         if(ref) setCanvasCameraScale(ref.state.scale);
     }
 
-    const onMouseDown = (e: React.MouseEvent) => {
-        if(e.button == 0) setMouseDown(true);
+    const getCoords = (e: PointerEvent) => {
+        const canvas = canvasRef.current;
+        if(!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / canvasCameraScale;
+        const y = (e.clientY - rect.top) / canvasCameraScale;
+
+        return {x, y}
     }
 
     const clearCanvas = () => {
@@ -34,52 +40,46 @@ export const useCanvas = (onDraw: ({ctx, curCoords, prevCoords}: Draw) => void, 
 
     // actual hook
     useEffect(() => {
-        const handler = (e: MouseEvent) => {
+        const handler = (e: PointerEvent) => {
             const curCoords = getCoords(e);
             const ctx = canvasRef.current?.getContext("2d");
             if(!ctx || !curCoords) return;
 
             onMove(curCoords);
-            if(mouseDown) onDraw({ctx, curCoords, prevCoords: prevCoords.current});
+            if(pointerDown) onDraw({ctx, curCoords, prevCoords: prevCoords.current});
             prevCoords.current = curCoords;
         }
 
-        const mouseDownHandler = (e: MouseEvent) => {
+        const pointerDownHandler = (e: PointerEvent) => {
             const curCoords = getCoords(e);
             const ctx = canvasRef.current?.getContext("2d");
             if(!ctx || !curCoords) return;
 
-            // this is here to make sure something gets drawn even if the user doesn't drag the mouse
-            if(e.button == 0) onDraw({ctx, curCoords, prevCoords: prevCoords.current});
+            
+            if(e.button == 0) {
+                prevCoords.current = curCoords;
+                setPointerDown(true);
+                // this is here to make drawing dots work (onMove is here to make the preview update correctly)
+                onMove(curCoords);
+                onDraw({ctx, curCoords, prevCoords: prevCoords.current});
+            } 
         }
 
-        const mouseUpHandler = () => {
-            setMouseDown(false);
+        const pointerUpHandler = () => {
+            setPointerDown(false);
             prevCoords.current = null;
         }
 
-        const getCoords = (e: MouseEvent) => {
-            const canvas = canvasRef.current;
-            if(!canvas) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / canvasCameraScale;
-            const y = (e.clientY - rect.top) / canvasCameraScale;
-
-            return {x, y}
-        }
-
-        
-        canvasRef.current?.addEventListener("mousedown", mouseDownHandler);
-        window.addEventListener("mousemove", handler);
-        window.addEventListener("mouseup", mouseUpHandler);
+        canvasRef.current?.addEventListener("pointerdown", pointerDownHandler);
+        window.addEventListener("pointermove", handler);
+        window.addEventListener("pointerup", pointerUpHandler);
 
         return () => { 
-            canvasRef.current?.removeEventListener("mousedown", mouseDownHandler);
-            window.removeEventListener("mousemove", handler);
-            window.removeEventListener("mouseup", mouseUpHandler);
+            canvasRef.current?.removeEventListener("pointerdown", pointerDownHandler);
+            window.removeEventListener("pointermove", handler);
+            window.removeEventListener("pointerup", pointerUpHandler);
         }
     }, [onDraw]);
 
-    return {canvasRef, onMouseDown, clearCanvas, setCanvasCameraScale}
+    return {canvasRef, clearCanvas, setCanvasCameraScale}
 }
